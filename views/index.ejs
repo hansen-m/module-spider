@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Available Modules</title>
+  <style>
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      margin: 20px;
+    }
+    h1 {
+      color: #569cd6;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 10px;
+    }
+    .module {
+      margin-bottom: 20px;
+      border: 1px solid #3c3c3c;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .search-box {
+      margin-bottom: 20px;
+    }
+    .search-box input {
+      padding: 10px;
+      width: 300px;
+      font-size: 16px;
+      background-color: #252526;
+      color: #d4d4d4;
+      border: 1px solid #3c3c3c;
+      border-radius: 5px;
+    }
+    .show-hidden {
+      display: none;
+      margin-bottom: 20px;
+    }
+    .show-hidden input {
+      margin-right: 5px;
+    }
+    .module-name {
+      color: #9cdcfe;
+    }
+    .copy-button {
+      margin-left: 10px;
+      cursor: pointer;
+      background-color: #252526;
+      color: #d4d4d4;
+      border: 1px solid #3c3c3c;
+      border-radius: 5px;
+      padding: 5px 10px;
+      transition: background-color 0.1s ease;
+    }
+    .copy-button:active {
+      background-color: #569cd6;
+    }
+    .module ul {
+      margin-top: 10px;
+    }
+    .module ul li {
+      margin-bottom: 5px;
+    }
+    .module ul li strong {
+      color: #dcdcaa;
+    }
+  </style>
+  <script>
+    function filterModules() {
+      const searchValue = document.getElementById('searchInput').value.toLowerCase();
+      const showHidden = document.getElementById('showHidden').checked;
+      const modules = document.getElementsByClassName('module');
+      Array.from(modules).forEach(module => {
+        const moduleName = module.getElementsByClassName('module-name')[0].innerText.toLowerCase();
+        const isHidden = module.getAttribute('data-hidden') === 'true';
+        if (moduleName.includes(searchValue) && (showHidden || !isHidden)) {
+          module.style.display = '';
+        } else {
+          module.style.display = 'none';
+        }
+      });
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        console.info('Copied to clipboard: ', text);
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+      filterModules(); // Initial filter to apply the hidden state on page load
+    });
+  </script>
+</head>
+<body>
+  <h1>Modules <span style="font-size: 0.5em; color: #dcdcaa;">(last updated: <%= lastModified %>)</span></h1>
+  <div class="search-box">
+    <input type="text" id="searchInput" onkeyup="filterModules()" placeholder="Search for modules...">
+  </div>
+  <div class="show-hidden">
+    <label>
+      <input type="checkbox" id="showHidden" onclick="filterModules()">
+      Show Hidden
+    </label>
+  </div>
+  <ul>
+    <% Object.keys(modules).sort().forEach(moduleName => { %>
+      <% Object.keys(modules[moduleName]).sort().forEach(filePath => { %>
+        <li class="module" data-hidden="<%= modules[moduleName][filePath].hidden %>">
+          <strong class="module-name" title="<%= filePath %>"><%= moduleName %></strong>
+          <button class="copy-button" onclick="copyToClipboard('module load <%= modules[moduleName][filePath].fullName %>')" title="Copy module load command to clipboard">Copy</button>
+          <ul>
+            <!-- <li><strong>File Path:</strong> <%= filePath %></li> -->
+            <li><strong>Version:</strong> <%= modules[moduleName][filePath].Version %></li>
+            <li><strong>Full Name:</strong> <%= modules[moduleName][filePath].fullName %></li>
+            <li><strong>Help:</strong> <%= modules[moduleName][filePath].help || 'N/A' %></li>
+            <li><strong>Description:</strong> <%= modules[moduleName][filePath].Description || 'N/A' %></li>
+            <li><strong>URL:</strong> <%= modules[moduleName][filePath].URL || 'N/A' %></li>
+            <li><strong>What is:</strong> <%= modules[moduleName][filePath].whatis ? modules[moduleName][filePath].whatis.join(', ') : 'N/A' %></li>
+          </ul>
+        </li>
+      <% }); %>
+    <% }); %>
+  </ul>
+</body>
+</html>
